@@ -4,39 +4,20 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
-    <title>Ufka Kanat VR</title>
-    <style>
-        body { margin: 0; background-color: black; color: #00ff00; text-align: center; font-family: sans-serif; }
-        canvas { display: block; margin: 20px auto; border: 1px solid #333; }
-    </style>
+    <title>Benim Oyunum: Ufka Kanat</title>
 </head>
-<body onload="brython()">
-    <h1>UFKA KANAT: HALKA SİMÜLASYONU</h1>
-    <p id="msg">Yükleniyor...</p>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-
+<body onload="brython()" style="background: black; color: white;">
     <script type="text/python">
-from browser import document, window
+from browser import document, window, html
 import math
 
-canvas = document["gameCanvas"]
-ctx = canvas.getContext("2d")
+# --- BURADAN AŞAĞIYA KENDİ PYTHON KODUNU YAPIŞTIR ---
 
-def animate(t):
-    ctx.clearRect(0, 0, 800, 600)
-    # 3 Farklı Halka Çizimi
-    for i, color in enumerate(['#00ffff', '#ff00ff', '#ffff00']):
-        radius = 100 + (i * 40) + math.sin(t/500 + i) * 15
-        ctx.beginPath()
-        ctx.arc(400, 300, radius, 0, 2 * math.pi)
-        ctx.strokeStyle = color
-        ctx.lineWidth = 5
-        ctx.stroke()
-    
-    document["msg"].text = "Sistem Aktif: Halkalar Dönüyor"
-    window.requestAnimationFrame(animate)
+# Örnek:
+# def senin_fonksiyonun():
+#     ...
 
-animate(0)
+# --- KENDİ KODUN BURADA BİTSİN ---
     </script>
 </body>
 </html>
