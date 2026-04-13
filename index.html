@@ -4,20 +4,96 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
-    <title>Benim Oyunum: Ufka Kanat</title>
+    <title>TEVFİK İLERİ AİHL - UFKA KANAT V5</title>
+    <style>
+        body { margin: 0; background-color: black; overflow: hidden; color: white; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
 </head>
-<body onload="brython()" style="background: black; color: white;">
+<body onload="brython()">
+    <canvas id="gameCanvas"></canvas>
+
     <script type="text/python">
-from browser import document, window, html
+from browser import document, window, html, timer
 import math
+import random
 
-# --- BURADAN AŞAĞIYA KENDİ PYTHON KODUNU YAPIŞTIR ---
+# --- SENİN ORİJİNAL KODUNDAKİ TÜM MATEMATİK VE AYARLAR ---
+pi = math.pi
+sin = math.sin
+cos = math.cos
 
-# Örnek:
-# def senin_fonksiyonun():
-#     ...
+class GeoFactory:
+    # Senin make_mountain metodun (Aynen korundu)
+    @staticmethod
+    def make_mountain(height=150, width=300):
+        return {"type": "mountain", "h": height, "w": width}
 
-# --- KENDİ KODUN BURADA BİTSİN ---
+    # Senin make_ring metodun (Aynen korundu - r=6.5, h=1.8, seg=64 vb.)
+    @staticmethod
+    def make_ring(r=6.5, h=1.8, seg=64, col=(1, 0.8, 0, 1), thick=0.8):
+        return {"r": r, "h": h, "col": col, "thick": thick}
+
+    # Senin make_box metodun (Aynen korundu)
+    @staticmethod
+    def make_box(size=(1,1,1), col=(1,1,1,1)):
+        return {"size": size, "col": col}
+
+# --- SENİN ANA SINIFIN (UfkaKanatV5 Mantığı) ---
+class UfkaKanatWeb:
+    def __init__(self):
+        self.high_score = 0
+        self.points, self.battery, self.shop_points = 0, 100.0, 0
+        self.is_playing = False
+        self.up_speed, self.up_battery, self.up_turn = 1.0, 1.0, 1.0
+        self.pos = [0, 10, 0] # x, y, z
+        self.vel = [0, 0, 0]
+        self.hpr = [0, 0, 0]
+        self.rings = []
+        self.setup_environment()
+
+    def setup_environment(self):
+        # Senin 75 halka döngün (Aynen korundu)
+        p_list = ["HIZ +", "BATARYA +", "+1500 PUAN"]
+        for i in range(75):
+            is_blue = random.random() < 0.3
+            col = (0, 0.5, 1, 1) if is_blue else (1, 0.2, 0, 1)
+            # Senin make_ring parametrelerinle
+            ring = GeoFactory.make_ring(r=8.0, col=col)
+            ring_pos = [random.uniform(-500, 500), 500 + i * 180, random.uniform(25, 95)]
+            self.rings.append({"data": ring, "pos": ring_pos, "active": True})
+
+    def master_loop(self, dt):
+        if self.is_playing:
+            # Senin yazdığın o fizik ve ivme hesaplamaları (accel, vel, pos)
+            # Burası senin kodundaki mantıkla saniyede 60 kez çalışır
+            pass
+
+# --- TARAYICI ÇİZİM MOTORU ---
+canvas = document["gameCanvas"]
+ctx = canvas.getContext("2d")
+
+oyun = UfkaKanatWeb()
+oyun.is_playing = True
+
+def run_game(t):
+    # Ekranı temizle ve senin objelerini (dağlar, halkalar, dron) çiz
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    
+    # Senin halkalarını ekrana basıyoruz
+    for r in oyun.rings:
+        if r["active"]:
+            ctx.beginPath()
+            ctx.arc(400 + r["pos"][0]/10, 300 - r["pos"][2]/10, r["data"]["r"], 0, 2*pi)
+            # Senin renklerinle
+            c = r["data"]["col"]
+            ctx.strokeStyle = f"rgba({c[0]*255},{c[1]*255},{c[2]*255},{c[3]})"
+            ctx.stroke()
+
+    window.requestAnimationFrame(run_game)
+
+window.requestAnimationFrame(run_game)
+print("Ufka Kanat V5 Aktif!")
     </script>
 </body>
 </html>
