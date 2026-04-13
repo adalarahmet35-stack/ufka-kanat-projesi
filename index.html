@@ -1,13 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
+    <title>Ufka Kanat Projesi</title>
 </head>
-<body onload="brython()">
+<body onload="brython()" style="background-color: black; color: white; text-align: center;">
+    <h1>Oyun Yükleniyor...</h1>
+    <canvas id="gameCanvas"></canvas>
+
     <script type="text/python">
-        # BURAYA AZ ÖNCEKİ neonvfghjkliü.py KODUNUN TAMAMINI YAPIŞTIR
-        # Sadece import panda3d kısımlarının tarayıcıda desteklendiğinden emin olacağız
+from browser import document, window, html
+
+# Buraya sadece test için bir yazı yazdırıyoruz ki çalıştığını görelim
+document <= html.H2("Sistem Çalışıyor! Halkalar Hazırlanıyor...")
+
+def setup():
+    print("Python kodu tarayıcıda tetiklendi!")
+
+setup()
     </script>
 </body>
 </html>
