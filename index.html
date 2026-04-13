@@ -19,52 +19,52 @@
     <canvas id="gameCanvas"></canvas>
 
     <script type="text/python">
-from browser import document, window, html
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
+    <title>Ufka Kanat VR</title>
+    <style>
+        body { margin: 0; background-color: black; color: #00ff00; text-align: center; font-family: sans-serif; }
+        canvas { display: block; margin: 20px auto; border: 1px solid #333; }
+    </style>
+</head>
+<body onload="brython()">
+    <h1>UFKA KANAT: HALKA SİMÜLASYONU</h1>
+    <p id="msg">Yükleniyor...</p>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script type="text/python">
+from browser import document, window, timer
 import math
 
-# Ekran ayarları
 canvas = document["gameCanvas"]
 ctx = canvas.getContext("2d")
 
-def resize(ev=None):
-    canvas.width = window.innerWidth * 0.9
-    canvas.height = window.innerHeight * 0.7
-window.bind("resize", resize)
-resize()
+# Sabit boyut verelim ki risk olmasın
+canvas.width = 800
+canvas.height = 600
 
-# Halka çizim fonksiyonu (Senin GeoFactory mantığını simüle eder)
-def draw_rings():
+def draw(t):
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    center_x = canvas.width / 2
-    center_y = canvas.height / 2
+    cx, cy = canvas.width / 2, canvas.height / 2
     
-    # Zaman bazlı hareket için
-    t = window.performance.now() / 1000
-    
-    # 3 Farklı Halka Çizelim (Cyan, Magenta, Yellow)
-    rings = [
-        {"r": 60, "color": "#00ffff", "offset": math.sin(t*2)*10},
-        {"r": 110, "color": "#ff00ff", "offset": math.cos(t*1.5)*15},
-        {"r": 160, "color": "#ffff00", "offset": math.sin(t)*20}
-    ]
-    
-    for ring in rings:
+    # 3 Renkli Halka
+    colors = ["#00ffff", "#ff00ff", "#ffff00"]
+    for i, color in enumerate(colors):
+        radius = 50 + (i * 50) + math.sin(t/500 + i) * 10
         ctx.beginPath()
-        ctx.strokeStyle = ring["color"]
-        ctx.lineWidth = 8
-        # Halkaları çiziyoruz
-        ctx.arc(center_x, center_y, ring["r"] + ring["offset"], 0, 2 * math.pi)
+        ctx.arc(cx, cy, radius, 0, 2 * math.pi)
+        ctx.strokeStyle = color
+        ctx.lineWidth = 5
         ctx.stroke()
 
-    document["msg"].text = "VR Modu Aktif - Halkalar Hareket Ediyor"
+def animate(t):
+    draw(t)
     window.requestAnimationFrame(animate)
 
-def animate(t):
-    draw_rings()
-
-# Başlat
-print("Simülasyon Başlatıldı!")
+# Yazıyı güncelle ve başlat
+document["msg"].text = "Halkalar Yüklendi! Gözlüğü Takabilirsin."
 animate(0)
-    </script>
-</body>
-</html>
