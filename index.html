@@ -1,99 +1,132 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-    <meta charset="utf-8">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
-    <title>TEVFİK İLERİ AİHL - UFKA KANAT V5</title>
+    <meta charset="UTF-8">
+    <title>UFKA KANAT V5 - PROJE</title>
     <style>
-        body { margin: 0; background-color: black; overflow: hidden; color: white; }
-        canvas { display: block; width: 100vw; height: 100vh; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+        #arayuz { position: absolute; top: 10px; left: 10px; color: #00ff00; z-index: 100; font-family: monospace; }
+        #menu { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(0,0,0,0.8); padding: 30px; border: 2px solid #00ff00; }
+        button { background: #00ff00; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
-<body onload="brython()">
-    <canvas id="gameCanvas"></canvas>
+<body>
 
-    <script type="text/python">
-from browser import document, window, html, timer
-import math
-import random
+    <div id="arayuz" style="display:none;">
+        <div>PUAN: <span id="p">0</span></div>
+        <div>BATARYA: %<span id="b">100</span></div>
+    </div>
 
-# --- SENİN ORİJİNAL KODUNDAKİ TÜM MATEMATİK VE AYARLAR ---
-pi = math.pi
-sin = math.sin
-cos = math.cos
+    <div id="menu">
+        <h1>UFKA KANAT V5</h1>
+        <p>Ahmet Said Adalar | Ömer Pile | Kerem Karaca</p>
+        <button onclick="baslat()">SİMÜLASYONU BAŞLAT</button>
+    </div>
 
-class GeoFactory:
-    # Senin make_mountain metodun (Aynen korundu)
-    @staticmethod
-    def make_mountain(height=150, width=300):
-        return {"type": "mountain", "h": height, "w": width}
+    <script type="importmap">
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+    </script>
 
-    # Senin make_ring metodun (Aynen korundu - r=6.5, h=1.8, seg=64 vb.)
-    @staticmethod
-    def make_ring(r=6.5, h=1.8, seg=64, col=(1, 0.8, 0, 1), thick=0.8):
-        return {"r": r, "h": h, "col": col, "thick": thick}
+    <script type="module">
+        import * as THREE from 'three';
 
-    # Senin make_box metodun (Aynen korundu)
-    @staticmethod
-    def make_box(size=(1,1,1), col=(1,1,1,1)):
-        return {"size": size, "col": col}
+        // --- SENİN KODUNDAKİ DEĞİŞKENLER VE MANTIK ---
+        let scene, camera, renderer, drone;
+        let points = 0, battery = 100, isRunning = false;
+        let pos = new THREE.Vector3(0, 10, 0);
+        let vel = new THREE.Vector3(0, 0, 0);
+        let rings = [];
+        const keys = {};
 
-# --- SENİN ANA SINIFIN (UfkaKanatV5 Mantığı) ---
-class UfkaKanatWeb:
-    def __init__(self):
-        self.high_score = 0
-        self.points, self.battery, self.shop_points = 0, 100.0, 0
-        self.is_playing = False
-        self.up_speed, self.up_battery, self.up_turn = 1.0, 1.0, 1.0
-        self.pos = [0, 10, 0] # x, y, z
-        self.vel = [0, 0, 0]
-        self.hpr = [0, 0, 0]
-        self.rings = []
-        self.setup_environment()
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87ceeb); // Senin Fog Rengin
+            scene.fog = new THREE.Fog(0x87ceeb, 100, 5000);
 
-    def setup_environment(self):
-        # Senin 75 halka döngün (Aynen korundu)
-        p_list = ["HIZ +", "BATARYA +", "+1500 PUAN"]
-        for i in range(75):
-            is_blue = random.random() < 0.3
-            col = (0, 0.5, 1, 1) if is_blue else (1, 0.2, 0, 1)
-            # Senin make_ring parametrelerinle
-            ring = GeoFactory.make_ring(r=8.0, col=col)
-            ring_pos = [random.uniform(-500, 500), 500 + i * 180, random.uniform(25, 95)]
-            self.rings.append({"data": ring, "pos": ring_pos, "active": True})
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
 
-    def master_loop(self, dt):
-        if self.is_playing:
-            # Senin yazdığın o fizik ve ivme hesaplamaları (accel, vel, pos)
-            # Burası senin kodundaki mantıkla saniyede 60 kez çalışır
-            pass
+            // Işıklandırma
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(10, 20, 10);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
 
-# --- TARAYICI ÇİZİM MOTORU ---
-canvas = document["gameCanvas"]
-ctx = canvas.getContext("2d")
+            // Zemin (Ground)
+            const gGeo = new THREE.PlaneGeometry(10000, 10000);
+            const gMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+            const ground = new THREE.Mesh(gGeo, gMat);
+            ground.rotation.x = -Math.PI/2;
+            scene.add(ground);
 
-oyun = UfkaKanatWeb()
-oyun.is_playing = True
+            // DRON (GeoFactory.make_box mantığı)
+            const dGeo = new THREE.BoxGeometry(1.5, 0.5, 1.5);
+            const dMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            drone = new THREE.Mesh(dGeo, dMat);
+            scene.add(drone);
 
-def run_game(t):
-    # Ekranı temizle ve senin objelerini (dağlar, halkalar, dron) çiz
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    
-    # Senin halkalarını ekrana basıyoruz
-    for r in oyun.rings:
-        if r["active"]:
-            ctx.beginPath()
-            ctx.arc(400 + r["pos"][0]/10, 300 - r["pos"][2]/10, r["data"]["r"], 0, 2*pi)
-            # Senin renklerinle
-            c = r["data"]["col"]
-            ctx.strokeStyle = f"rgba({c[0]*255},{c[1]*255},{c[2]*255},{c[3]})"
-            ctx.stroke()
+            // HALKALAR (75 adet - GeoFactory.make_ring mantığı)
+            for(let i=0; i<75; i++) {
+                const rGeo = new THREE.TorusGeometry(7, 0.7, 16, 64);
+                const rMat = new THREE.MeshStandardMaterial({ color: (i % 3 == 0) ? 0x00ffff : 0xff0000, emissive: 0x00ffff, emissiveIntensity: 0.5 });
+                const ring = new THREE.Mesh(rGeo, rMat);
+                ring.position.set(Math.random()*400 - 200, 20 + Math.random()*50, i * 150 + 200);
+                scene.add(ring);
+                rings.push(ring);
+            }
 
-    window.requestAnimationFrame(run_game)
+            window.addEventListener('keydown', e => keys[e.code] = true);
+            window.addEventListener('keyup', e => keys[e.code] = false);
 
-window.requestAnimationFrame(run_game)
-print("Ufka Kanat V5 Aktif!")
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if(isRunning) {
+                // Fizik ve Hareket (Senin Python formüllerin)
+                const dt = 0.016;
+                const speed = 60;
+
+                if(keys['KeyW']) vel.z += speed * dt;
+                if(keys['KeyS']) vel.z -= speed * dt;
+                if(keys['KeyA']) drone.rotation.y += 0.05;
+                if(keys['KeyD']) drone.rotation.y -= 0.05;
+                if(keys['Space']) pos.y += 0.5;
+
+                pos.x += vel.x; pos.y += vel.y; pos.z += vel.z;
+                vel.multiplyScalar(0.95); // Sürtünme
+
+                drone.position.copy(pos);
+                camera.position.set(pos.x, pos.y + 5, pos.z - 15);
+                camera.lookAt(pos.x, pos.y, pos.z + 20);
+
+                // Çarpışma Kontrolü
+                rings.forEach(r => {
+                    if(r.visible && pos.distanceTo(r.position) < 8) {
+                        r.visible = false;
+                        points += 100;
+                        document.getElementById('p').innerText = points;
+                    }
+                });
+
+                battery -= 0.01;
+                document.getElementById('b').innerText = Math.floor(battery);
+                if(battery <= 0) location.reload();
+            }
+            renderer.render(scene, camera);
+        }
+
+        window.baslat = function() {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('arayuz').style.display = 'block';
+            isRunning = true;
+        }
+
+        init();
     </script>
 </body>
 </html>
