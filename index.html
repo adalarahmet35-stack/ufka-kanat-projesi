@@ -4,27 +4,6 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
-    <title>Ufka Kanat VR Projesi</title>
-    <style>
-        body { margin: 0; background-color: black; color: lime; overflow: hidden; font-family: monospace; }
-        canvas { display: block; margin: auto; border: 2px solid #333; background: #000; }
-        #status { position: absolute; top: 10px; width: 100%; text-align: center; }
-    </style>
-</head>
-<body onload="brython()">
-    <div id="status">
-        <h1>UFKA KANAT: HALKA SİMÜLASYONU</h1>
-        <p id="msg">Sistem yükleniyor...</p>
-    </div>
-    <canvas id="gameCanvas"></canvas>
-
-    <script type="text/python">
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
     <title>Ufka Kanat VR</title>
     <style>
         body { margin: 0; background-color: black; color: #00ff00; text-align: center; font-family: sans-serif; }
@@ -37,34 +16,27 @@
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
     <script type="text/python">
-from browser import document, window, timer
+from browser import document, window
 import math
 
 canvas = document["gameCanvas"]
 ctx = canvas.getContext("2d")
 
-# Sabit boyut verelim ki risk olmasın
-canvas.width = 800
-canvas.height = 600
-
-def draw(t):
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    cx, cy = canvas.width / 2, canvas.height / 2
-    
-    # 3 Renkli Halka
-    colors = ["#00ffff", "#ff00ff", "#ffff00"]
-    for i, color in enumerate(colors):
-        radius = 50 + (i * 50) + math.sin(t/500 + i) * 10
+def animate(t):
+    ctx.clearRect(0, 0, 800, 600)
+    # 3 Farklı Halka Çizimi
+    for i, color in enumerate(['#00ffff', '#ff00ff', '#ffff00']):
+        radius = 100 + (i * 40) + math.sin(t/500 + i) * 15
         ctx.beginPath()
-        ctx.arc(cx, cy, radius, 0, 2 * math.pi)
+        ctx.arc(400, 300, radius, 0, 2 * math.pi)
         ctx.strokeStyle = color
         ctx.lineWidth = 5
         ctx.stroke()
-
-def animate(t):
-    draw(t)
+    
+    document["msg"].text = "Sistem Aktif: Halkalar Dönüyor"
     window.requestAnimationFrame(animate)
 
-# Yazıyı güncelle ve başlat
-document["msg"].text = "Halkalar Yüklendi! Gözlüğü Takabilirsin."
 animate(0)
+    </script>
+</body>
+</html>
