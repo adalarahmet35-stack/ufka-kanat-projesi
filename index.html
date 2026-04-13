@@ -4,22 +4,67 @@
     <meta charset="utf-8">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brython@3.11.0/brython_stdlib.js"></script>
-    <title>Ufka Kanat Projesi</title>
+    <title>Ufka Kanat VR Projesi</title>
+    <style>
+        body { margin: 0; background-color: black; color: lime; overflow: hidden; font-family: monospace; }
+        canvas { display: block; margin: auto; border: 2px solid #333; background: #000; }
+        #status { position: absolute; top: 10px; width: 100%; text-align: center; }
+    </style>
 </head>
-<body onload="brython()" style="background-color: black; color: white; text-align: center;">
-    <h1>Oyun Yükleniyor...</h1>
+<body onload="brython()">
+    <div id="status">
+        <h1>UFKA KANAT: HALKA SİMÜLASYONU</h1>
+        <p id="msg">Sistem yükleniyor...</p>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
     <script type="text/python">
 from browser import document, window, html
+import math
 
-# Buraya sadece test için bir yazı yazdırıyoruz ki çalıştığını görelim
-document <= html.H2("Sistem Çalışıyor! Halkalar Hazırlanıyor...")
+# Ekran ayarları
+canvas = document["gameCanvas"]
+ctx = canvas.getContext("2d")
 
-def setup():
-    print("Python kodu tarayıcıda tetiklendi!")
+def resize(ev=None):
+    canvas.width = window.innerWidth * 0.9
+    canvas.height = window.innerHeight * 0.7
+window.bind("resize", resize)
+resize()
 
-setup()
+# Halka çizim fonksiyonu (Senin GeoFactory mantığını simüle eder)
+def draw_rings():
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    center_x = canvas.width / 2
+    center_y = canvas.height / 2
+    
+    # Zaman bazlı hareket için
+    t = window.performance.now() / 1000
+    
+    # 3 Farklı Halka Çizelim (Cyan, Magenta, Yellow)
+    rings = [
+        {"r": 60, "color": "#00ffff", "offset": math.sin(t*2)*10},
+        {"r": 110, "color": "#ff00ff", "offset": math.cos(t*1.5)*15},
+        {"r": 160, "color": "#ffff00", "offset": math.sin(t)*20}
+    ]
+    
+    for ring in rings:
+        ctx.beginPath()
+        ctx.strokeStyle = ring["color"]
+        ctx.lineWidth = 8
+        # Halkaları çiziyoruz
+        ctx.arc(center_x, center_y, ring["r"] + ring["offset"], 0, 2 * math.pi)
+        ctx.stroke()
+
+    document["msg"].text = "VR Modu Aktif - Halkalar Hareket Ediyor"
+    window.requestAnimationFrame(animate)
+
+def animate(t):
+    draw_rings()
+
+# Başlat
+print("Simülasyon Başlatıldı!")
+animate(0)
     </script>
 </body>
 </html>
